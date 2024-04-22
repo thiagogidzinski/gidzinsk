@@ -1,0 +1,66 @@
+"""
+Created on Tue Apr 16 14:55:56 2024
+
+@author: Thiago Gidzinhski
+"""
+import pandas as pd
+
+#variable to read the files using pandas divided by previsors and answers
+previsores = pd.read_csv('entradas_breast.csv')
+classe = pd.read_csv('saidas_breast.csv')
+
+
+
+
+# Division of treinament and test
+from sklearn.model_selection import train_test_split
+
+# Declaration of variables spliting treinament and test and using train_test_split function to determinate the range of 25% of the file
+previsores_treinamento, previsores_teste, classe_treinamento, classe_teste = train_test_split(previsores, classe, test_size= 0.25)
+
+import keras
+#Importing the class(Sequential) that we will use to create our neural network
+from keras.models import Sequential
+#Importing the class(Dense) because we will use denses layers in the neural network
+#The class dense determinate the conection between ALL NEURONS
+from keras.layers import Dense
+
+"""input layer | hidden layer | output layer"""
+
+#Creating the neural network
+classificador = Sequential()
+#Creating the first hidden layer, instantiating an object with Dense class
+
+#param units determinate how many neurons represents the hidden layer, use the formula:
+#number of entrances + number of neurons in the output layer and divided by 2
+
+#param activation is the activation function, using the linear function relu
+
+#param kernel_initializer determinate how you'll boot the weights
+
+#param input_dim determinate how many elements in the input layer
+#use  Keras Documentation it s important
+
+classificador.add(Dense(units=16,activation= 'relu',
+                        kernel_initializer= 'random_uniform', input_dim = 30))
+#Creating the output layer with one neuron because is a binary classification problem
+classificador.add(Dense(units=1, activation = 'sigmoid'))
+
+#Compiling the neural network
+
+classificador.compile(optimizer = 'adam', loss = 'binary_crossentropy',
+                      metrics = ['binary_accuracy'])
+#calling fit function to start the treinament
+classificador.fit(previsores_treinamento, classe_treinamento,
+                  batch_size = 10, epochs = 100)
+
+previsoes = classificador.predict(previsores_teste)
+previsoes = (previsoes > 0.5)
+
+from sklearn.metrics import confusion_matrix, accuracy_score
+precisao = accuracy_score(classe_teste, previsoes)
+
+
+matriz = confusion_matrix(classe_teste, previsoes)
+
+resultado = classificador.evaluate(previsores_teste, classe_teste)
